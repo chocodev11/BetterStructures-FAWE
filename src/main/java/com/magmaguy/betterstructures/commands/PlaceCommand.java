@@ -20,7 +20,7 @@ public class PlaceCommand extends AdvancedCommand {
         addArgument("schematic", new ListStringCommandArgument(loadedSchematics, "<schematic>"));
         addArgument("type", new ListStringCommandArgument(List.of(GeneratorConfigFields.StructureType.SURFACE.toString(), GeneratorConfigFields.StructureType.UNDERGROUND_SHALLOW.toString(), GeneratorConfigFields.StructureType.UNDERGROUND_DEEP.toString(), GeneratorConfigFields.StructureType.SKY.toString(), GeneratorConfigFields.StructureType.LIQUID_SURFACE.toString()),"<type>"));
         setPermission("betterstructures.*");
-        setDescription("Allows players to place structures.");
+        setDescription("Cho phép người chơi đặt các công trình.");
         setSenderType(SenderType.PLAYER);
         setUsage("/betterstructures place <schematic> <SURFACE/SKY/LIQUID_SURFACE/UNDERGROUND_DEEP/UNDERGROUND_SHALLOW>");
     }
@@ -39,20 +39,20 @@ public class PlaceCommand extends AdvancedCommand {
                     break;
                 }
             if (commandSchematicContainer == null) {
-                player.sendMessage("[BetterStructures] 无效的建筑模板！");
+                player.sendMessage("[BetterStructures] Bản mẫu (schematic) công trình không hợp lệ!");
                 return;
             }
             GeneratorConfigFields.StructureType structureType;
             try {
                 structureType = GeneratorConfigFields.StructureType.valueOf(schematicType);
             } catch (Exception exception) {
-                player.sendMessage("[BetterStructures] 无法获取有效的建筑类型！");
+                player.sendMessage("[BetterStructures] Không thể lấy được loại công trình hợp lệ!");
                 return;
             }
             FitAnything.commandBasedCreation(player.getLocation().getChunk(), structureType, commandSchematicContainer);
-            player.sendMessage("[BetterStructures] 正在尝试放置 " + schematicFile + " ！");
+            player.sendMessage("[BetterStructures] Đang cố gắng đặt " + schematicFile + " !");
         } catch (Exception ex) {
-            player.sendMessage("[BetterStructures] 无效的建筑模板！");
+            player.sendMessage("[BetterStructures] Bản mẫu (schematic) công trình không hợp lệ!");
         }
     }
 }

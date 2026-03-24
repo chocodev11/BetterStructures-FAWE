@@ -12,13 +12,13 @@ public class DebugCommand extends AdvancedCommand {
         super(List.of("debug"));
         setPermission("betterstructures.*");
         setUsage("/betterstructures debug");
-        setDescription("Toggles BetterStructures developer debug messages.");
+        setDescription("Bật/tắt các tin nhắn gỡ lỗi (debug) dành cho nhà phát triển của BetterStructures.");
     }
 
     @Override
     public void execute(CommandData commandData) {
         boolean enabled = DefaultConfig.toggleDeveloperMessages();
         Logger.sendMessage(commandData.getCommandSender(),
-                "&2Developer message 已" + (enabled ? "&a开启" : "&c关闭") + "&2，无需重载。");
+                "&2Tin nhắn dành cho nhà phát triển đã được " + (enabled ? "&abật" : "&ctắt") + "&2, không cần tải lại.");
     }
 }

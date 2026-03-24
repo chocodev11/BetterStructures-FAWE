@@ -185,8 +185,8 @@ public class FitAnything {
                     for (Player player : Bukkit.getOnlinePlayers())
                         if (player.hasPermission("betterstructures.warn"))
                             player.spigot().sendMessage(
-                                    SpigotMessage.commandHoverMessage("[BetterStructures] 新的" + structureTypeString + "建筑已生成！点击传送。执行 \"/betterstructures silent\" 停止警告！",
-                                            "点击传送到 " + location.getWorld().getName() + ", " + location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ() + "\n 模板名称: " + schematicContainer.getConfigFilename(),
+                                    SpigotMessage.commandHoverMessage("[BetterStructures] Công trình " + structureTypeString + " mới đã được tạo! Nhấp để dịch chuyển. Dùng lệnh \"/betterstructures silent\" để dừng cảnh báo!",
+                                            "Nhấp để dịch chuyển đến " + location.getWorld().getName() + ", " + location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ() + "\n Tên mẫu: " + schematicContainer.getConfigFilename(),
                                             "/betterstructures teleport " + location.getWorld().getName() + " " + location.getBlockX() + " " + location.getBlockY() + " " + location.getBlockZ())
                             );
                 }
@@ -202,33 +202,33 @@ public class FitAnything {
                     try {
                         addPedestal(location);
                     } catch (Exception exception) {
-                        Logger.warn("分配基座材料失败！");
+                        Logger.warn("Lỗi phân bổ vật liệu đế!");
                         exception.printStackTrace();
                     }
                     try {
                         if (fitAnything instanceof FitSurfaceBuilding)
                             clearTrees(location);
                     } catch (Exception exception) {
-                        Logger.warn("清除树木失败！");
+                        Logger.warn("Lỗi dọn dẹp cây cối!");
                         exception.printStackTrace();
                     }
                 }
                 try {
                     fillChests();
                 } catch (Exception exception) {
-                    Logger.warn("填充箱子失败！");
+                    Logger.warn("Lỗi điền vào rương!");
                     exception.printStackTrace();
                 }
                 try {
                     spawnEntities();
                 } catch (Exception exception) {
-                    Logger.warn("生成实体失败！");
+                    Logger.warn("Lỗi tạo thực thể!");
                     exception.printStackTrace();
                 }
                 try{
                     spawnProps(fitAnything.schematicClipboard);
                 } catch (Exception exception) {
-                    Logger.warn("生成装饰物失败！");
+                    Logger.warn("Lỗi tạo đồ trang trí!");
                     exception.printStackTrace();
                 }
             }
@@ -359,7 +359,7 @@ public class FitAnything {
             for (Vector chestPosition : schematicContainer.getChestLocations()) {
                 Location chestLocation = LocationProjector.project(location, schematicOffset, chestPosition);
                 if (!(chestLocation.getBlock().getState() instanceof Container container)) {
-                    Logger.warn("预期 " + chestLocation.getBlock().getType() + " 是容器但未获取到。跳过此战利品！");
+                    Logger.warn("Dự kiến " + chestLocation.getBlock().getType() + " là thùng chứa nhưng không lấy được. Bỏ qua chiến lợi phẩm này!");
                     continue;
                 }
 
@@ -472,7 +472,7 @@ public class FitAnything {
                         trackingIdentifier = mmBossId;
                     }
                 } else {
-                    Logger.warn("MythicMobs Boss 列表为空！无法替换 EliteMobs Boss: " + bossFilename);
+                    Logger.warn("Danh sách MythicMobs Boss trống! Không thể thay thế EliteMobs Boss: " + bossFilename);
                 }
             }
 
@@ -508,7 +508,7 @@ public class FitAnything {
                 } else {
                     if (!worldGuardWarn) {
                         worldGuardWarn = true;
-                        Logger.warn("你未使用 WorldGuard，因此 BetterStructures 无法保护Boss竞技场！建议使用 WorldGuard 以保证公平的战斗体验。");
+                        Logger.warn("Bạn không sử dụng WorldGuard, do đó BetterStructures không thể bảo vệ đấu trường Boss! Khuyên dùng WorldGuard để đảm bảo trải nghiệm chiến đấu công bằng.");
                     }
                 }
             }

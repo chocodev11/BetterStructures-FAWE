@@ -42,7 +42,7 @@ public class BSPackage extends ContentPackage {
         player.closeInventory();
         File folder = getSpecificSchematicFolder();
         if (!folder.exists()) {
-            Logger.sendMessage(player, "未找到目录 " + folder.getAbsolutePath());
+            Logger.sendMessage(player, "Không tìm thấy thư mục " + folder.getAbsolutePath());
             return;
         }
 
@@ -57,8 +57,8 @@ public class BSPackage extends ContentPackage {
         MetadataHandler.PLUGIN.onDisable();
         MetadataHandler.PLUGIN.onLoad();
         MetadataHandler.PLUGIN.onEnable();
-        Logger.sendMessage(player, " 已尝试重载。可能无法完全生效，如有问题请重启服务器！");
-        Logger.sendMessage(player, "已安装 " + contentPackageConfigFields.getName());
+        Logger.sendMessage(player, " Đã thử tải lại. Có thể không hoàn toàn có hiệu lực, nếu có vấn đề vui lòng khởi động lại máy chủ!");
+        Logger.sendMessage(player, "Đã cài đặt " + contentPackageConfigFields.getName());
     }
 
     @Override
@@ -66,7 +66,7 @@ public class BSPackage extends ContentPackage {
         player.closeInventory();
         File folder = getSpecificSchematicFolder();
         if (!folder.exists()) {
-            Logger.sendMessage(player, "未找到目录 " + folder.getAbsolutePath());
+            Logger.sendMessage(player, "Không tìm thấy thư mục " + folder.getAbsolutePath());
             return;
         }
 
@@ -81,23 +81,23 @@ public class BSPackage extends ContentPackage {
         MetadataHandler.PLUGIN.onDisable();
         MetadataHandler.PLUGIN.onLoad();
         MetadataHandler.PLUGIN.onEnable();
-        Logger.sendMessage(player, " 已尝试重载。可能无法完全生效，如有问题请重启服务器！");
+        Logger.sendMessage(player, " Đã thử tải lại. Có thể không hoàn toàn có hiệu lực, nếu có vấn đề vui lòng khởi động lại máy chủ!");
 
-        Logger.sendMessage(player, "已卸载 " + contentPackageConfigFields.getName());
+        Logger.sendMessage(player, "Đã gỡ cài đặt " + contentPackageConfigFields.getName());
     }
 
     @Override
     public void doDownload(Player player) {
         player.closeInventory();
         player.sendMessage("----------------------------------------------------");
-        Logger.sendMessage(player, "&4请在此下载 &9 " + contentPackageConfigFields.getDownloadLink());
+        Logger.sendMessage(player, "&4Vui lòng tải xuống tại đây &9 " + contentPackageConfigFields.getDownloadLink());
         player.sendMessage("----------------------------------------------------");
     }
 
     @Override
     protected ItemStack getInstalledItemStack() {
         List<String> lore = new ArrayList<>(contentPackageConfigFields.getDescription());
-        lore.addAll(List.of("内容已安装！", "点击卸载！"));
+        lore.addAll(List.of("Đã cài đặt nội dung!", "Nhấp để gỡ cài đặt!"));
         return ItemStackGenerator.generateItemStack(Material.GREEN_STAINED_GLASS_PANE, contentPackageConfigFields.getName(), lore);
     }
 
@@ -105,24 +105,24 @@ public class BSPackage extends ContentPackage {
     protected ItemStack getPartiallyInstalledItemStack() {
         List<String> lore = new ArrayList<>(contentPackageConfigFields.getDescription());
         lore.addAll(List.of(
-                "内容部分安装！",
-                "这可能是因为你还没有下载完全，",
-                "或者因为某些元素已被手动禁用。",
-                "点击下载！"));
+                "Nội dung được cài đặt một phần!",
+                "Nguyên nhân có thể là do bạn chưa tải xuống hoàn tất,",
+                "hoặc một số yếu tố đã bị tắt thủ công.",
+                "Nhấp để tải xuống!"));
         return ItemStackGenerator.generateItemStack(Material.ORANGE_STAINED_GLASS_PANE, contentPackageConfigFields.getName(), lore);
     }
 
     @Override
     protected ItemStack getNotInstalledItemStack() {
         List<String> lore = new ArrayList<>(contentPackageConfigFields.getDescription());
-        lore.addAll(List.of("内容未安装！", "点击安装！"));
+        lore.addAll(List.of("Nội dung chưa được cài đặt!", "Nhấp để cài đặt!"));
         return ItemStackGenerator.generateItemStack(Material.YELLOW_STAINED_GLASS_PANE, contentPackageConfigFields.getName(), lore);
     }
 
     @Override
     protected ItemStack getNotDownloadedItemStack() {
         List<String> lore = new ArrayList<>(contentPackageConfigFields.getDescription());
-        lore.addAll(List.of("内容未下载！", "点击获取下载链接！"));
+        lore.addAll(List.of("Nội dung chưa được tải xuống!", "Nhấp để lấy liên kết tải xuống!"));
         return ItemStackGenerator.generateItemStack(Material.RED_STAINED_GLASS_PANE, contentPackageConfigFields.getName(), lore);
     }
 

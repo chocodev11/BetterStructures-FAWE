@@ -17,7 +17,7 @@ public class GenerateModulesCommand extends AdvancedCommand {
         setUsage("/bs generateModules <ModuleGeneratorsConfigFile.yml>");
         addArgument("moduleGeneratorsConfigFile", new ListStringCommandArgument(ModuleGeneratorsConfig.getModuleGenerators().keySet().stream().toList(), "<module.yml>"));
         setPermission("betterstructures.generatemodules");
-        setDescription("Generates modular builds in a dedicated world, based on the generator's configuration file.");
+        setDescription("Tạo các công trình dạng mô-đun trong một thế giới riêng biệt, dựa trên tệp cấu hình của máy tạo.");
         setSenderType(SenderType.PLAYER);
     }
 
@@ -30,7 +30,7 @@ public class GenerateModulesCommand extends AdvancedCommand {
 //        }
         ModuleGeneratorsConfigFields moduleGeneratorsConfigFields = ModuleGeneratorsConfig.getModuleGenerators().get(commandData.getStringArgument("moduleGeneratorsConfigFile"));
         if (moduleGeneratorsConfigFields == null) {
-            Logger.sendMessage(commandData.getCommandSender(), "文件 " + commandData.getStringArgument("moduleGeneratorsConfigFile") + " 未找到！世界将不会生成。");
+            Logger.sendMessage(commandData.getCommandSender(), "Không tìm thấy tệp " + commandData.getStringArgument("moduleGeneratorsConfigFile") + "! Thế giới sẽ không được tạo.");
             return;
         }
         WFCGenerator.generateFromConfig(

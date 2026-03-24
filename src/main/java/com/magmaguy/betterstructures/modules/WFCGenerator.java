@@ -90,7 +90,7 @@ public class WFCGenerator {
 
     private void initializeProgressBar() {
         if (player != null) {
-            progressBar = Bukkit.createBossBar("正在生成建筑...", BarColor.BLUE, BarStyle.SOLID);
+            progressBar = Bukkit.createBossBar("Đang tạo công trình...", BarColor.BLUE, BarStyle.SOLID);
             progressBar.addPlayer(player);
             progressBar.setProgress(0.0);
         }
@@ -124,8 +124,8 @@ public class WFCGenerator {
 
         List<String> startModules = moduleGeneratorsConfigFields.getStartModules();
         if (startModules.isEmpty()) {
-            if (player != null) player.sendMessage("没有起始模块，你需要先安装或制作模块！");
-            Logger.warn("没有起始模块，你需要先安装或制作模块！");
+            if (player != null) player.sendMessage("Không có mô-đun bắt đầu, bạn cần cài đặt hoặc tạo mô-đun trước!");
+            Logger.warn("Không có mô-đun bắt đầu, bạn cần cài đặt hoặc tạo mô-đun trước!");
             cancel();
             return;
         }
@@ -152,7 +152,7 @@ public class WFCGenerator {
     }
 
     private void reserveChunks() {
-        updateProgressBar("正在初始化网格...");
+        updateProgressBar("Đang khởi tạo lưới...");
         if (moduleGeneratorsConfigFields.isWorldGeneration()) {
             this.world = WorldInitializer.generateWorld(worldName, player);
         } else {
@@ -164,7 +164,7 @@ public class WFCGenerator {
     }
 
     private void startArrangingModules() {
-        updateProgressBar("开始生成...");
+        updateProgressBar("Bắt đầu tạo...");
         new InitializeGenerationTask().runTaskAsynchronously(MetadataHandler.PLUGIN);
     }
 
@@ -174,7 +174,7 @@ public class WFCGenerator {
         }
         isGenerating = true;
 
-        updateProgressBar("正在折叠初始节点...");
+        updateProgressBar("Đang đóng gói nút ban đầu...");
 
         try {
             WFCNode startChunk = createStartChunk(startingModule);
@@ -185,7 +185,7 @@ public class WFCGenerator {
             generateFast();
 
         } catch (Exception e) {
-            Logger.warn("生成过程中出错: " + e.getMessage());
+            Logger.warn("Lỗi trong quá trình tạo: " + e.getMessage());
             e.printStackTrace();
             cleanup();
         }
@@ -196,7 +196,7 @@ public class WFCGenerator {
 
         ModulesContainer modulesContainer = ModulesContainer.getModulesContainers().get(startingModule);
         if (modulesContainer == null) {
-            Logger.warn("起始模块为空！正在取消！");
+            Logger.warn("Mô-đun bắt đầu trống! Đang hủy!");
             return null;
         }
 
@@ -206,7 +206,7 @@ public class WFCGenerator {
     }
 
     private void generateFast() {
-        updateProgressBar("正在传播约束...");
+        updateProgressBar("Đang lan truyền các ràng buộc...");
         while (!isCancelled) {
             WFCNode nextCell = spatialGrid.getLowestEntropyNode();
             if (nextCell == null) {
@@ -229,7 +229,7 @@ public class WFCGenerator {
     private void generateNextChunk(WFCNode gridCell) {
         HashSet<ModulesContainer> validOptions = gridCell.getValidOptions();
         if (validOptions == null || validOptions.isEmpty()) {
-            updateProgressBar("正在回溯...");
+            updateProgressBar("Đang quay lại (backtrack)...");
             org.bukkit.Location targetLocation = gridCell.getRealCenterLocation();
 //            if (player != null)
 //                player.spigot().sendMessage(Logger.commandHoverMessage("Rolling back cell at " + gridCell.getCellLocation(), "Click to teleport", "tp " + targetLocation.getX() + " " + targetLocation.getY() + " " + targetLocation.getZ()));
@@ -239,30 +239,30 @@ public class WFCGenerator {
 
         ModulesContainer modulesContainer = pickWeightedRandomModule(validOptions, gridCell);
         if (modulesContainer == null) {
-            updateProgressBar("正在回溯...");
+            updateProgressBar("Đang quay lại (backtrack)...");
             rollbackChunk();
             return;
         }
 
         paste(gridCell, modulesContainer);
         completedNodes++;
-        updateProgressBar("生成中... (" + completedNodes + "/" + totalNodes + ")");
+        updateProgressBar("Đang tạo... (" + completedNodes + "/" + totalNodes + ")");
     }
 
     private void rollbackChunk() {
         // Use proper backtracking instead of just resetting
         if (spatialGrid.backtrack()) {
-            updateProgressBar("正在回溯... (" + spatialGrid.getBacktrackDepth() + " decisions remaining)");
+            updateProgressBar("Đang quay lại... (" + spatialGrid.getBacktrackDepth() + " decisions remaining)");
         } else {
-            updateProgressBar("生成失败 - 没有可回溯的决策");
+            updateProgressBar("Tạo thất bại - không có quyết định nào để quay lại");
             cancel();
             return;
         }
 
         rollbackCounter++;
         if (rollbackCounter > 1000) {
-            updateProgressBar("生成失败 - 超过回溯限制");
-            Logger.warn("超过回溯限制！");
+            updateProgressBar("Tạo thất bại - vượt quá giới hạn quay lại");
+            Logger.warn("Vượt quá giới hạn quay lại!");
             cancel();
             //retry
             if (player != null) new WFCGenerator(moduleGeneratorsConfigFields, player);
@@ -271,10 +271,10 @@ public class WFCGenerator {
     }
 
     private void done() {
-        updateProgressBar("生成完成!");
+        updateProgressBar("Tạo hoàn tất!");
         if (player != null) {
-            player.sendMessage("组装完成！");
-            player.sendMessage("粘贴建筑需要一些时间，可能需要重新登录。");
+            player.sendMessage("Lắp ráp hoàn tất!");
+            player.sendMessage("Dán công trình sẽ mất một chút thời gian, có thể cần phải đăng nhập lại.");
         }
         isGenerating = false;
         instantPaste();

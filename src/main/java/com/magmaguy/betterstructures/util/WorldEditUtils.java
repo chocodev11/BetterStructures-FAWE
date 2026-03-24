@@ -157,7 +157,7 @@ public class WorldEditUtils {
             Operations.complete(operation);
 
         } catch (Exception e) {
-            Logger.warn("Failed to paste entities at " + location + ": " + e.getMessage());
+            Logger.warn("Lỗi khi dán thực thể tại " + location + ": " + e.getMessage());
         }
     }
 

@@ -21,7 +21,7 @@ public class TeleportCommand extends AdvancedCommand {
         addArgument("z", new IntegerCommandArgument("<z>"));
         setUsage("/teleport <worldname> <x> <y> <z>");
         setPermission("betterstructures.*");
-        setDescription("Teleports a player to specific coordinates.");
+        setDescription("Dịch chuyển một người chơi đến tọa độ cụ thể.");
         setSenderType(SenderType.PLAYER);
     }
 
@@ -34,7 +34,7 @@ public class TeleportCommand extends AdvancedCommand {
             double z = Double.parseDouble(commandData.getStringArgument("z"));
             commandData.getPlayerSender().teleport(new Location(world, x, y, z));
         } catch (Exception ex) {
-            Logger.sendMessage(commandData.getCommandSender(), "传送失败，因为目标位置无效！");
+            Logger.sendMessage(commandData.getCommandSender(), "Dịch chuyển thất bại vì vị trí đích không hợp lệ!");
         }
     }
 }

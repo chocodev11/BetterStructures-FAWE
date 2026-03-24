@@ -42,7 +42,7 @@ public class MythicMobs {
         if (Bukkit.getPluginManager().getPlugin("MythicMobs") == null) {
             for (Player player : Bukkit.getOnlinePlayers()) {
                 if (player.hasPermission("betterstructures.*")) {
-                    Logger.sendMessage(player, "&c你的某个内容包使用了 MythicMobs 插件，&4但 MythicMobs 当前未安装在你的服务器上&c！&2你可以在这里下载: &9https://www.spigotmc.org/resources/%E2%9A%94-mythicmobs-free-version-%E2%96%BAthe-1-custom-mob-creator%E2%97%84.5702/");
+                    Logger.sendMessage(player, "&cMột trong các gói nội dung của bạn sử dụng plugin MythicMobs, &4nhưng MythicMobs hiện chưa được cài đặt trên máy chủ của bạn&c! &2Bạn có thể tải xuống tại đây: &9https://www.spigotmc.org/resources/%E2%9A%94-mythicmobs-free-version-%E2%96%BAthe-1-custom-mob-creator%E2%97%84.5702/");
                 }
             }
             return null;
@@ -53,10 +53,10 @@ public class MythicMobs {
         String mobId = args[0];
         MythicMob mob = MythicBukkit.inst().getMobManager().getMythicMob(mobId).orElse(null);
         if (mob == null) {
-            Logger.warn("生成区域Boss失败！未找到 MythicMob ID: '" + mobId + "'");
-            Logger.warn("  - 原始文件名参数: " + filename);
-            Logger.warn("  - 位置: " + location.getWorld().getName() + " at " + location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ());
-            Logger.warn("  - 请确保在 ~/plugins/MythicMobs/Mobs/ 中存在具有此 ID 的生物");
+            Logger.warn("Tạo Boss khu vực thất bại! Không tìm thấy MythicMob ID: '" + mobId + "'");
+            Logger.warn("  - Tham số tên tệp gốc: " + filename);
+            Logger.warn("  - Vị trí: " + location.getWorld().getName() + " at " + location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ());
+            Logger.warn("  - Vui lòng đảm bảo có quái vật với ID này trong thư mục ~/plugins/MythicMobs/Mobs/");
             return null;
         }
 
@@ -64,7 +64,7 @@ public class MythicMobs {
         try {
             level = Double.parseDouble(args[1]);
         } catch (Exception e) {
-            Logger.warn("解析生物等级失败 " + filename + "！");
+            Logger.warn("Lỗi phân tích cấp độ quái vật " + filename + "!");
             return null;
         }
 
@@ -116,7 +116,7 @@ public class MythicMobs {
         cacheBuilt = false;
 
         if (Bukkit.getPluginManager().getPlugin("MythicMobs") == null) {
-            Logger.warn("MythicMobs 覆盖已启用，但 MythicMobs 插件未安装！");
+            Logger.warn("Ghi đè MythicMobs đã được bật, nhưng plugin MythicMobs chưa được cài đặt!");
             return;
         }
 
@@ -148,12 +148,12 @@ public class MythicMobs {
             typeMappingCache = mapping;
             cacheBuilt = true;
 
-            Logger.info("MythicMobs 类型映射缓存已构建: " + mapping.size() + " 个原版类型已映射");
+            Logger.info("Bộ nhớ cache ánh xạ loại MythicMobs đã được xây dựng: " + mapping.size() + " loại nguyên bản đã được ánh xạ");
             for (Map.Entry<EntityType, List<String>> entry : mapping.entrySet()) {
                 Logger.info("  " + entry.getKey().name() + " → " + entry.getValue());
             }
         } catch (Exception e) {
-            Logger.warn("构建 MythicMobs 类型映射缓存失败: " + e.getMessage());
+            Logger.warn("Xây dựng bộ nhớ cache ánh xạ loại MythicMobs thất bại: " + e.getMessage());
             e.printStackTrace();
         }
     }

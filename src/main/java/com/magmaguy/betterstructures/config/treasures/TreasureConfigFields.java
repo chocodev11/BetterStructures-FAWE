@@ -116,13 +116,13 @@ public class TreasureConfigFields extends CustomConfigFields {
         try {
             fileConfiguration.save(file);
         } catch (Exception ex) {
-            player.sendMessage("[BetterStructures] Failed to save entry to file! Report this to the developer.");
+            player.sendMessage("[BetterStructures] Lỗi lưu mục vào tệp! Vui lòng báo cáo vấn đề này cho nhà phát triển.");
             return;
         }
         MetadataHandler.PLUGIN.onDisable();
         MetadataHandler.PLUGIN.onLoad();
         MetadataHandler.PLUGIN.onEnable();
-        player.sendMessage("[BetterStructures] Reloaded plugin to add chest entry! It should now be live.");
+        player.sendMessage("[BetterStructures] Đã tải lại plugin để thêm mục rương! Bây giờ nó đã được cập nhật.");
     }
 
     public class ConfigurationEnchantment {

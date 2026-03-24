@@ -12,15 +12,15 @@ public class BetterStructuresCommand extends AdvancedCommand {
         super(new ArrayList<>());
         setUsage("/bs");
         setPermission("betterstructures.*");
-        setDescription("A basic help command for BetterStructures.");
+        setDescription("Một lệnh trợ giúp cơ bản cho BetterStructures.");
         setSenderType(SenderType.PLAYER);
     }
 
     @Override
     public void execute(CommandData commandData) {
-        Logger.sendMessage(commandData.getCommandSender(), "BetterStructures 是一个为你的 Minecraft 世界添加随机建筑的插件！");
-        Logger.sendMessage(commandData.getCommandSender(), "你可以通过 &2/betterstructures setup &f命令查看已有建筑并下载新建筑。");
-        Logger.sendMessage(commandData.getCommandSender(), "安装内容包后，建筑将自动生成在新生成的区块中，无需执行任何命令。");
-        Logger.sendMessage(commandData.getCommandSender(), "默认情况下，管理员会收到新建筑生成的通知，直到他们关闭这些消息。");
+        Logger.sendMessage(commandData.getCommandSender(), "BetterStructures là một plugin thêm các công trình ngẫu nhiên vào thế giới Minecraft của bạn!");
+        Logger.sendMessage(commandData.getCommandSender(), "Bạn có thể dùng lệnh &2/betterstructures setup &fđể xem các công trình đã có và tải xuống công trình mới.");
+        Logger.sendMessage(commandData.getCommandSender(), "Sau khi cài đặt gói nội dung, các công trình sẽ tự động tạo ra trong các chunk mới mà không cần lệnh nào.");
+        Logger.sendMessage(commandData.getCommandSender(), "Theo mặc định, quản trị viên sẽ nhận được thông báo khi có công trình mới được tạo ra, cho đến khi họ tắt các tin nhắn này.");
     }
 }

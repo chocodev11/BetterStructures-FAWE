@@ -377,7 +377,7 @@ public class MobTrackingManager {
                         }
                         spawnedMob.setPersistent(true);
                     } catch (IllegalArgumentException e) {
-                        Logger.warn("重生原版生物失败: " + config.getMobIdentifier());
+                        Logger.warn("Lỗi hồi sinh quái vật gốc: " + config.getMobIdentifier());
                     }
                     break;
 
@@ -399,7 +399,7 @@ public class MobTrackingManager {
                                 spawnedMob = MythicMobs.spawnAndReturn(spawnLoc, mmMobId + ":1");
                             }
                         } catch (IllegalArgumentException e) {
-                            Logger.warn("重生覆盖生物失败，无法识别原始类型: " + config.getMobIdentifier());
+                            Logger.warn("Lỗi hồi sinh quái vật ghi đè, không thể nhận dạng loại gốc: " + config.getMobIdentifier());
                         }
                     }
                     // Fallback to vanilla if MM override fails
@@ -412,7 +412,7 @@ public class MobTrackingManager {
                             }
                             spawnedMob.setPersistent(true);
                         } catch (IllegalArgumentException e) {
-                            Logger.warn("重生原版生物失败: " + config.getMobIdentifier());
+                            Logger.warn("Lỗi hồi sinh quái vật gốc: " + config.getMobIdentifier());
                         }
                     }
                     break;
@@ -454,7 +454,7 @@ public class MobTrackingManager {
         // Mark for saving
         StructureLocationManager.getInstance().markDirty(structure.getWorldName());
 
-        Logger.info("位于 " + structure.getFormattedCoordinates() + " 的建筑已被清除！");
+        Logger.info("Công trình tại " + structure.getFormattedCoordinates() + " đã được dọn sạch!");
     }
 
     /**
@@ -511,10 +511,10 @@ public class MobTrackingManager {
                     .replace("{z}", String.valueOf(z));
 
             try {
-                Logger.info("执行测试命令: " + parsedCommand);
+                Logger.info("Đang thực thi lệnh kiểm tra: " + parsedCommand);
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), parsedCommand);
             } catch (Exception e) {
-                Logger.warn("执行测试命令失败: " + parsedCommand + " - " + e.getMessage());
+                Logger.warn("Lỗi thực thi lệnh kiểm tra: " + parsedCommand + " - " + e.getMessage());
             }
         }
     }
@@ -534,6 +534,6 @@ public class MobTrackingManager {
             }
         }
 
-        Logger.info("已重建生物追踪空间索引");
+        Logger.info("Đã xây dựng lại chỉ mục không gian theo dõi quái vật");
     }
 }

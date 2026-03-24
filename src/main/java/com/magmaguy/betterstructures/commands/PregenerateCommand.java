@@ -21,7 +21,7 @@ public class PregenerateCommand extends AdvancedCommand {
         addArgument("setWorldBorder", new ListStringCommandArgument(List.of("TRUE", "FALSE"), "Set a world border at the end?"));
         setUsage("/betterstructures pregenerate <centerType> <shape> <radiusInBlocks> <applyWorldBorder>");
         setPermission("betterstructures.*");
-        setDescription("Pregenerates chunks from a center point outward in either a square or circle pattern up to the specified radius in blocks.");
+        setDescription("Tạo trước các chunk từ một điểm trung tâm hướng ra ngoài theo hình vuông hoặc hình tròn cho đến bán kính khối chỉ định.");
         setSenderType(SenderType.PLAYER);
     }
 
@@ -33,7 +33,7 @@ public class PregenerateCommand extends AdvancedCommand {
         String setWorldBorderArg = commandData.getStringArgument("setWorldBorder");
 
         if (radius < 0) {
-            Logger.sendMessage(commandData.getCommandSender(), "&c半径必须大于或等于 0。");
+            Logger.sendMessage(commandData.getCommandSender(), "&cBán kính phải lớn hơn hoặc bằng 0.");
             return;
         }
 
@@ -52,26 +52,26 @@ public class PregenerateCommand extends AdvancedCommand {
                 center = world.getSpawnLocation();
                 break;
             default:
-                Logger.sendMessage(commandData.getCommandSender(), "&c无效的中心参数。请使用 HERE、WORLD_CENTER 或 WORLD_SPAWN。");
+                Logger.sendMessage(commandData.getCommandSender(), "&cTham số điểm trung tâm không hợp lệ. Vui lòng sử dụng HERE, WORLD_CENTER, hoặc WORLD_SPAWN.");
                 return;
         }
 
         boolean setWorldBorder = "TRUE".equalsIgnoreCase(setWorldBorderArg);
 
         if (!"SQUARE".equalsIgnoreCase(shape) && !"CIRCLE".equalsIgnoreCase(shape)) {
-            Logger.sendMessage(commandData.getCommandSender(), "&c无效的形状。请使用 SQUARE 或 CIRCLE。");
+            Logger.sendMessage(commandData.getCommandSender(), "&cHình dạng không hợp lệ. Vui lòng sử dụng SQUARE hoặc CIRCLE.");
             return;
         }
 
         int radiusInBlocks = radius;
         int radiusInChunks = (int) Math.ceil(radiusInBlocks / 16.0);
 
-        Logger.sendMessage(commandData.getCommandSender(), "&2开始区块预生成，形状: " + shape + ", center: " + centerArg + ", radius: " + radiusInBlocks + " blocks (" + radiusInChunks + " chunks)");
+        Logger.sendMessage(commandData.getCommandSender(), "&2Bắt đầu tạo trước chunk, hình dạng: " + shape + ", center: " + centerArg + ", radius: " + radiusInBlocks + " blocks (" + radiusInChunks + " chunks)");
         if (setWorldBorder) {
-            Logger.sendMessage(commandData.getCommandSender(), "&2世界边界将设置为与生成区域匹配。");
+            Logger.sendMessage(commandData.getCommandSender(), "&2Biên giới thế giới sẽ được đặt để khớp với khu vực tạo ra.");
         }
-        Logger.sendMessage(commandData.getCommandSender(), "&7进度将每 30 秒在控制台报告一次。");
-        Logger.sendMessage(commandData.getCommandSender(), "&7如需取消请使用 &2/betterstructures cancelPregenerate &7命令。");
+        Logger.sendMessage(commandData.getCommandSender(), "&7Tiến độ sẽ được báo cáo trên bảng điều khiển (console) mỗi 30 giây.");
+        Logger.sendMessage(commandData.getCommandSender(), "&7Nếu cần hủy, vui lòng sử dụng lệnh &2/betterstructures cancelPregenerate &7.");
 
         ChunkPregenerator pregenerator = new ChunkPregenerator(world, center, shape, radiusInBlocks, radiusInChunks, setWorldBorder);
         pregenerator.start();

@@ -13,12 +13,12 @@ public class VersionCommand extends AdvancedCommand {
         super(List.of("version"));
         setPermission("betterstructures.*");
         setUsage("/betterstructures version");
-        setDescription("Shows the version of the plugin");
+        setDescription("Hiển thị phiên bản của plugin");
     }
 
     @Override
     public void execute(CommandData commandData) {
-        Logger.sendMessage(commandData.getCommandSender(), "&a版本 " +
+        Logger.sendMessage(commandData.getCommandSender(), "&aPhiên bản " +
                 Bukkit.getPluginManager().getPlugin(
                         MetadataHandler.PLUGIN.getName()).getDescription().getVersion());
     }

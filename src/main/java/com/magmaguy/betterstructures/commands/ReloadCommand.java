@@ -12,7 +12,7 @@ public class ReloadCommand extends AdvancedCommand {
         super(List.of("reload"));
         setPermission("betterstructures.*");
         setUsage("/betterstructures reload");
-        setDescription("Reloads the plugin.");
+        setDescription("Tải lại plugin.");
     }
 
     @Override
@@ -20,6 +20,6 @@ public class ReloadCommand extends AdvancedCommand {
         MetadataHandler.PLUGIN.onDisable();
         MetadataHandler.PLUGIN.onLoad();
         MetadataHandler.PLUGIN.onEnable();
-        Logger.sendMessage(commandData.getCommandSender(), "已尝试重载。可能无法完全生效，如有问题请重启服务器！");
+        Logger.sendMessage(commandData.getCommandSender(), "Đã thử tải lại. Có thể không hoàn toàn áp dụng, nếu có vấn đề vui lòng khởi động lại máy chủ!");
     }
 }

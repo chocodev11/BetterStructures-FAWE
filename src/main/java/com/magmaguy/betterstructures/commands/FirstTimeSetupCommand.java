@@ -12,7 +12,7 @@ public class FirstTimeSetupCommand extends AdvancedCommand {
         super(List.of("initialize"));
         setUsage("/bs initialize");
         setPermission("betterstructures.initialize");
-        setDescription("Does the first time setup of the plugin.");
+        setDescription("Thực hiện thiết lập lần đầu cho plugin.");
         setSenderType(SenderType.PLAYER);
     }
 

@@ -14,7 +14,7 @@ public class CancelPregenerateCommand extends AdvancedCommand {
         super(List.of("cancelPregenerate", "cancelpregenerate"));
         setUsage("/betterstructures cancelPregenerate");
         setPermission("betterstructures.*");
-        setDescription("Cancels active chunk pregeneration in your current world.");
+        setDescription("Hủy quá trình tạo trước chunk đang hoạt động trong thế giới hiện tại của bạn.");
         setSenderType(SenderType.PLAYER);
     }
 
@@ -28,7 +28,7 @@ public class CancelPregenerateCommand extends AdvancedCommand {
                 .toList();
 
         if (worldPregenerators.isEmpty()) {
-            Logger.sendMessage(commandData.getCommandSender(), "&c未找到正在进行的预生成任务，世界: " + world.getName());
+            Logger.sendMessage(commandData.getCommandSender(), "&cKhông tìm thấy nhiệm vụ tạo trước chunk nào đang diễn ra ở thế giới: " + world.getName());
             return;
         }
 
@@ -39,7 +39,7 @@ public class CancelPregenerateCommand extends AdvancedCommand {
             cancelled++;
         }
 
-        Logger.sendMessage(commandData.getCommandSender(), "&2已取消 " + cancelled + " 个预生成任务，世界: " + world.getName());
+        Logger.sendMessage(commandData.getCommandSender(), "&2Đã hủy " + cancelled + " nhiệm vụ tạo trước chunk ở thế giới: " + world.getName());
     }
 }
 

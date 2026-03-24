@@ -12,7 +12,7 @@ public class SetupCommand extends AdvancedCommand {
         super(List.of("setup"));
         setPermission("betterstructures.setup");
         setSenderType(SenderType.PLAYER);
-        setDescription("The main command for setting up BetterStructures!");
+        setDescription("Lệnh chính để thiết lập BetterStructures!");
         setUsage("/bs setup");
     }
 

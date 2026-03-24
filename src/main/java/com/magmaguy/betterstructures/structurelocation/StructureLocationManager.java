@@ -80,7 +80,7 @@ public class StructureLocationManager {
     public void recordStructure(Location location, String schematicName, StructureType structureType,
                                  int radiusX, int radiusY, int radiusZ) {
         if (location == null || location.getWorld() == null) {
-            Logger.warn("Attempted to record structure with null location or world");
+            Logger.warn("Đã thử ghi cấu trúc với vị trí hoặc thế giới rỗng (null)");
             return;
         }
 
@@ -205,7 +205,7 @@ public class StructureLocationManager {
 
                             mobSpawnConfigs.add(new MobSpawnConfig(mobType, identifier, relX, relY, relZ));
                         } catch (Exception e) {
-                            Logger.warn("Failed to load mob spawn config: " + e.getMessage());
+                            Logger.warn("Lỗi tải cấu hình sinh quái: " + e.getMessage());
                         }
                     }
                 }
@@ -315,7 +315,7 @@ public class StructureLocationManager {
         try {
             config.save(file);
         } catch (IOException e) {
-            Logger.warn("Failed to save structure locations for world: " + worldName);
+            Logger.warn("Lỗi lưu vị trí cấu trúc cho thế giới: " + worldName);
             e.printStackTrace();
             // Re-mark as dirty to retry next save cycle
             dirtyWorlds.add(worldName);

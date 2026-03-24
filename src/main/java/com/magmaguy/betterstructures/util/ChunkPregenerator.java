@@ -70,7 +70,7 @@ public class ChunkPregenerator implements Listener {
         centerChunkX = center.getBlockX() >> 4;
         centerChunkZ = center.getBlockZ() >> 4;
 
-        Logger.info("开始区块预生成，形状: " + shape + ", center chunk: (" + centerChunkX + ", " + centerChunkZ + "), radius: " + maxRadiusBlocks + " blocks (" + maxRadiusChunks + " chunks)");
+        Logger.info("Bắt đầu tạo trước chunk (khu vực), hình dạng: " + shape + ", center chunk: (" + centerChunkX + ", " + centerChunkZ + "), radius: " + maxRadiusBlocks + " blocks (" + maxRadiusChunks + " chunks)");
 
         // Register this pregenerator as active
         activePregenerators.add(this);
@@ -97,7 +97,7 @@ public class ChunkPregenerator implements Listener {
         if (currentTPS < pauseThreshold) {
             if (!isPaused) {
                 isPaused = true;
-                Logger.warn("暂停区块预生成 - TPS 低于 " + pauseThreshold + " (当前: " + String.format("%.2f", currentTPS) + ")");
+                Logger.warn("Tạm dừng tạo trước chunk - TPS dưới " + pauseThreshold + " (hiện tại: " + String.format("%.2f", currentTPS) + ")");
                 // Cancel the current workload
                 if (currentWorkloadTask != null) {
                     currentWorkloadTask.cancel();
@@ -106,7 +106,7 @@ public class ChunkPregenerator implements Listener {
             }
         } else if (isPaused && currentTPS >= resumeThreshold) {
             isPaused = false;
-            Logger.info("恢复区块预生成 - TPS 恢复至 " + String.format("%.2f", currentTPS) + " (高于 " + resumeThreshold + ")");
+            Logger.info("Tiếp tục tạo trước chunk - TPS phục hồi về " + String.format("%.2f", currentTPS) + " (cao hơn " + resumeThreshold + ")");
             // Resume by generating the current layer again
             generateNextLayer();
         }
@@ -156,7 +156,7 @@ public class ChunkPregenerator implements Listener {
         } else if ("CIRCLE".equalsIgnoreCase(shape)) {
             chunksAdded[0] = generateCircleLayer(workload, currentRadius);
         } else {
-            Logger.warn("无效的形状: " + shape + "。必须为 SQUARE 或 CIRCLE。");
+            Logger.warn("Hình dạng không hợp lệ: " + shape + ". Phải là SQUARE hoặc CIRCLE.");
             onComplete();
             return;
         }
@@ -244,13 +244,13 @@ public class ChunkPregenerator implements Listener {
             }
             // Chunk counting is now handled by ChunkLoadEvent listener
         } catch (Exception e) {
-            Logger.warn("生成区块失败 (" + chunkX + ", " + chunkZ + "): " + e.getMessage());
+            Logger.warn("Lỗi tạo chunk (" + chunkX + ", " + chunkZ + "): " + e.getMessage());
         }
     }
 
     private void onComplete() {
         cleanup();
-        Logger.info("区块预生成完成。已处理 " + generatedChunks.size() + " 个区块，新生成 " + newlyGeneratedChunks + " 个区块，最大半径: " + maxRadiusBlocks + " 格 (" + actualMaxRadiusChunks + " 个区块)");
+        Logger.info("Quá trình tạo trước chunk hoàn tất. Đã xử lý " + generatedChunks.size() + " chunk, tạo mới " + newlyGeneratedChunks + " chunk, bán kính tối đa: " + maxRadiusBlocks + " khối (" + actualMaxRadiusChunks + " chunk)");
 
         if (setWorldBorder) {
             setWorldBorder();
@@ -259,7 +259,7 @@ public class ChunkPregenerator implements Listener {
 
     private void onCancelled() {
         cleanup();
-        Logger.info("区块预生成已取消。已处理 " + generatedChunks.size() + " 个区块，新生成 " + newlyGeneratedChunks + " 个区块，已达最大半径: " + (actualMaxRadiusChunks * 16) + " 格 (" + actualMaxRadiusChunks + " 个区块)");
+        Logger.info("Quá trình tạo trước chunk đã bị hủy. Đã xử lý " + generatedChunks.size() + " chunk, tạo mới " + newlyGeneratedChunks + " chunk, đã đạt bán kính tối đa: " + (actualMaxRadiusChunks * 16) + " khối (" + actualMaxRadiusChunks + " chunk)");
     }
 
     private void cleanup() {
@@ -340,24 +340,24 @@ public class ChunkPregenerator implements Listener {
         // Calculate estimated time remaining (use chunksProcessed to match what's displayed)
         String estimatedTimeLeft = calculateEstimatedTimeLeft(chunksProcessed, expectedChunksTotal, allChunksLoadedLast30s);
 
-        Logger.info("=== 预生成统计 ===");
+        Logger.info("=== Thống kê tạo trước ===");
         if (isPaused) {
-            Logger.info("状态: 已暂停 (等待 TPS 恢复)");
+            Logger.info("Trạng thái: Đã tạm dừng (chờ TPS phục hồi)");
         }
-        Logger.info("已处理区块: " + chunksProcessed + " / " + expectedChunksTotal);
-        Logger.info("新生成区块 (总计): " + newlyGeneratedChunks);
-        Logger.info("新加载区块 (最近30秒): " + chunksLoadedLast30s);
-        Logger.info("当前 TPS: " + String.format("%.2f", tps));
-        Logger.info("生成设置:");
-        Logger.info("  - 形状: " + shape);
-        Logger.info("  - Tick 占用: " + String.format("%.1f", tickUsage * 100) + "%");
-        Logger.info("  - 目标半径: " + maxRadiusBlocks + " 格 (" + maxRadiusChunks + " 个区块)");
-        Logger.info("  - 当前区块半径: " + currentRadius + " / " + maxRadiusChunks + " (" + (currentRadius * 16) + " / " + maxRadiusBlocks + " 格)");
-        Logger.info("  - 已达最大区块半径: " + actualMaxRadiusChunks);
-        Logger.info("已生成建筑 (总计): " + structuresGeneratedTotal);
-        Logger.info("已生成建筑 (最近30秒): " + structuresGeneratedLast30s);
+        Logger.info("Chunk đã xử lý: " + chunksProcessed + " / " + expectedChunksTotal);
+        Logger.info("Chunk mới tạo (tổng cộng): " + newlyGeneratedChunks);
+        Logger.info("Chunk mới tải (30 giây qua): " + chunksLoadedLast30s);
+        Logger.info("TPS hiện tại: " + String.format("%.2f", tps));
+        Logger.info("Cài đặt tạo:");
+        Logger.info("  - Hình dạng: " + shape);
+        Logger.info("  - Dùng Tick: " + String.format("%.1f", tickUsage * 100) + "%");
+        Logger.info("  - Bán kính mục tiêu: " + maxRadiusBlocks + " khối (" + maxRadiusChunks + " chunk)");
+        Logger.info("  - Bán kính chunk hiện tại: " + currentRadius + " / " + maxRadiusChunks + " (" + (currentRadius * 16) + " / " + maxRadiusBlocks + " khối)");
+        Logger.info("  - Bán kính chunk tối đa đã đạt: " + actualMaxRadiusChunks);
+        Logger.info("Công trình đã tạo (tổng cộng): " + structuresGeneratedTotal);
+        Logger.info("Công trình đã tạo (30 giây qua): " + structuresGeneratedLast30s);
         if (estimatedTimeLeft != null) {
-            Logger.info("预计剩余时间: " + estimatedTimeLeft);
+            Logger.info("Thời gian còn lại ước tính: " + estimatedTimeLeft);
         }
         Logger.info("===========================");
 
@@ -458,7 +458,7 @@ public class ChunkPregenerator implements Listener {
 
             return chunksToGenerate.size();
         } catch (Exception e) {
-            Logger.warn("计算预期区块总数失败: " + e.getMessage());
+            Logger.warn("Lỗi tính tổng số chunk dự kiến: " + e.getMessage());
             return 0;
         }
     }
@@ -490,9 +490,9 @@ public class ChunkPregenerator implements Listener {
             world.getWorldBorder().setCenter(center.getX(), center.getZ());
             world.getWorldBorder().setSize(borderSize);
 
-            Logger.info("世界边界已设置为大小: " + borderSize + " 格 (半径: " + maxRadiusBlocks + "), 中心: (" + center.getX() + ", " + center.getZ() + ")");
+            Logger.info("Biên giới thế giới đã được đặt thành kích thước: " + borderSize + " khối (bán kính: " + maxRadiusBlocks + "), trung tâm: (" + center.getX() + ", " + center.getZ() + ")");
         } catch (Exception e) {
-            Logger.warn("设置世界边界失败: " + e.getMessage());
+            Logger.warn("Lỗi thiết lập biên giới thế giới: " + e.getMessage());
         }
     }
 }

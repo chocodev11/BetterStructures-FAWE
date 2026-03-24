@@ -19,7 +19,7 @@ public class StructureInfoCommand extends AdvancedCommand {
         super(List.of("info"));
         setUsage("/bs info");
         setPermission("betterstructures.*");
-        setDescription("显示你当前所在结构的详细信息。");
+        setDescription("Hiển thị thông tin chi tiết về công trình bạn đang ở hiện tại.");
         setSenderType(SenderType.PLAYER);
     }
 
@@ -41,28 +41,28 @@ public class StructureInfoCommand extends AdvancedCommand {
         }
 
         if (found == null) {
-            Logger.sendMessage(player, "&c你当前不在任何已记录的结构范围内。");
+            Logger.sendMessage(player, "&cBạn hiện không ở trong phạm vi của bất kỳ công trình nào được ghi nhận.");
             return;
         }
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-        Logger.sendMessage(player, "&a&l===== 结构信息 =====");
-        Logger.sendMessage(player, "&6建筑模板: &f" + found.schematicName());
-        Logger.sendMessage(player, "&6结构类型: &f" + found.structureType().name());
-        Logger.sendMessage(player, "&6世界: &f" + found.getWorldName());
-        Logger.sendMessage(player, "&6坐标: &f" + found.getFormattedCoordinates());
-        Logger.sendMessage(player, "&6范围: &fX=" + found.getRadiusX()
+        Logger.sendMessage(player, "&a&l===== Thông tin công trình =====");
+        Logger.sendMessage(player, "&6Bản mẫu công trình (schematic): &f" + found.schematicName());
+        Logger.sendMessage(player, "&6Loại công trình: &f" + found.structureType().name());
+        Logger.sendMessage(player, "&6Thế giới: &f" + found.getWorldName());
+        Logger.sendMessage(player, "&6Tọa độ: &f" + found.getFormattedCoordinates());
+        Logger.sendMessage(player, "&6Phạm vi: &fX=" + found.getRadiusX()
                 + " Y=" + found.getRadiusY()
                 + " Z=" + found.getRadiusZ());
-        Logger.sendMessage(player, "&6已清除: &f" + (found.isCleared() ? "是" : "否"));
+        Logger.sendMessage(player, "&6Đã dọn dẹp: &f" + (found.isCleared() ? "có" : "không"));
         if (found.isCleared() && found.getClearedTimestamp() > 0) {
-            Logger.sendMessage(player, "&6清除时间: &f" + sdf.format(new Date(found.getClearedTimestamp())));
+            Logger.sendMessage(player, "&6Thời gian dọn dẹp: &f" + sdf.format(new Date(found.getClearedTimestamp())));
         }
-        Logger.sendMessage(player, "&6重生次数: &f" + found.getRespawnCount());
-        Logger.sendMessage(player, "&6Boss 结构: &f" + (found.isBossStructure() ? "是" : "否"));
-        Logger.sendMessage(player, "&6怪物配置数: &f" + found.getTotalMobCount());
-        Logger.sendMessage(player, "&6存活怪物数: &f" + found.getAliveMobCount());
-        Logger.sendMessage(player, "&6创建时间: &f" + sdf.format(new Date(found.getCreatedTimestamp())));
+        Logger.sendMessage(player, "&6Số lần hồi sinh: &f" + found.getRespawnCount());
+        Logger.sendMessage(player, "&6Công trình Boss: &f" + (found.isBossStructure() ? "có" : "không"));
+        Logger.sendMessage(player, "&6Số lượng quái vật được cấu hình: &f" + found.getTotalMobCount());
+        Logger.sendMessage(player, "&6Số lượng quái vật còn sống: &f" + found.getAliveMobCount());
+        Logger.sendMessage(player, "&6Thời gian tạo: &f" + sdf.format(new Date(found.getCreatedTimestamp())));
     }
 }

@@ -14,15 +14,15 @@ public class CommandTestCommand extends AdvancedCommand {
         super(List.of("commandtest"));
         setPermission("betterstructures.*");
         setUsage("/betterstructures commandtest");
-        setDescription("Test the structure cleared commands at your current location.");
+        setDescription("Thử nghiệm các lệnh dọn dẹp công trình tại vị trí hiện tại của bạn.");
         setSenderType(SenderType.PLAYER);
     }
 
     @Override
     public void execute(CommandData commandData) {
         Player player = (Player) commandData.getCommandSender();
-        Logger.sendMessage(player, "&a正在测试你所在位置的建筑清除命令...");
+        Logger.sendMessage(player, "&aĐang thử nghiệm lệnh dọn dẹp công trình tại vị trí của bạn...");
         MobTrackingManager.getInstance().testCommands(player);
-        Logger.sendMessage(player, "&a测试完成！请查看控制台获取详情。");
+        Logger.sendMessage(player, "&aThử nghiệm hoàn tất! Vui lòng kiểm tra bảng điều khiển (console) để biết thêm chi tiết.");
     }
 }
