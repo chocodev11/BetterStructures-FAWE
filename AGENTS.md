@@ -3,6 +3,7 @@
 > Version: 3.6
 > Last Updated: 2025-12-18
 > Description: Codex CLI global instructions, providing unified behavioral constraints for AI coding agents.
+> Use English for all responses.
 
 ---
 
@@ -24,12 +25,6 @@ When rules conflict, execute according to the following priorities (from highest
 ---
 
 ## 🌐 Communication Style
-
-### Language Conventions
-
-- Default to using Chinese for responses, can mix with English technical terms.
-- Code identifiers (variables, functions, classes) must use English.
-- Code comments should prioritize Chinese, keeping them concise and clear.
 
 ### Mixed Output Modes
 
