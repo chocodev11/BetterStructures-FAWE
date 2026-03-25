@@ -3,6 +3,9 @@ package com.magmaguy.betterstructures.buildingfitter;
 import com.magmaguy.betterstructures.MetadataHandler;
 import com.magmaguy.betterstructures.api.BuildPlaceEvent;
 import com.magmaguy.betterstructures.api.ChestFillEvent;
+import com.magmaguy.betterstructures.api.PlacementOptions;
+import com.magmaguy.betterstructures.api.PlacementResult;
+import com.magmaguy.betterstructures.api.StructurePlacedEvent;
 import com.magmaguy.betterstructures.buildingfitter.util.FitUndergroundDeepBuilding;
 import com.magmaguy.betterstructures.buildingfitter.util.LocationProjector;
 import com.magmaguy.betterstructures.buildingfitter.util.SchematicPicker;
@@ -24,7 +27,12 @@ import com.magmaguy.betterstructures.worldedit.Schematic;
 import com.magmaguy.magmacore.util.Logger;
 import com.magmaguy.magmacore.util.SpigotMessage;
 import com.magmaguy.magmacore.util.VersionChecker;
+import com.sk89q.worldedit.WorldEditException;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.math.transform.AffineTransform;
+import com.sk89q.worldedit.world.block.BaseBlock;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -67,13 +75,171 @@ public class FitAnything {
     protected Location location = null;
     protected GeneratorConfigFields.StructureType structureType;
     private Material pedestalMaterial = null;
+    private boolean apiPlacement = false;
+    private PlacementOptions apiOptions = null;
+    private Consumer<PlacementResult> apiCallback = null;
+    private long apiPlacementStartTime = 0L;
+    private final List<Vector> apiChestLocations = new ArrayList<>();
+    private final Map<Vector, EntityType> apiVanillaSpawns = new HashMap<>();
+    private final Map<Vector, String> apiEliteMobsSpawns = new HashMap<>();
+    private final Map<Vector, String> apiMythicMobsSpawns = new HashMap<>();
 
     public FitAnything(SchematicContainer schematicContainer) {
         this.schematicContainer = schematicContainer;
+        this.schematicClipboard = schematicContainer.getClipboard();
+        this.schematicOffset = WorldEditUtils.getSchematicOffset(this.schematicClipboard);
+        this.structureType = schematicContainer.getGeneratorConfigFields().getStructureTypes().isEmpty()
+                ? GeneratorConfigFields.StructureType.UNDEFINED
+                : schematicContainer.getGeneratorConfigFields().getStructureTypes().get(0);
         this.verticalOffset = schematicContainer.getClipboard().getMinimumPoint().y() - schematicContainer.getClipboard().getOrigin().y();
     }
 
     public FitAnything() {
+    }
+    
+    public FitAnything(
+            SchematicContainer schematicContainer,
+            Location location,
+            PlacementOptions options,
+            Consumer<PlacementResult> completionCallback
+    ) {
+        this(schematicContainer);
+        this.location = location;
+        this.apiPlacement = true;
+        this.apiOptions = options;
+        this.apiCallback = completionCallback;
+        this.apiPlacementStartTime = System.currentTimeMillis();
+        applyApiTransformation();
+        analyzeApiClipboard();
+    }
+    
+    /**
+     * Direct paste method for API calls (skips chunk-based scanning).
+     * Called by BetterStructuresAPI after creating FitAnything with API constructor.
+     *
+     * @param location The location to paste at
+     */
+    public void pasteDirect(Location location) {
+        this.location = location;
+        paste(location, null);
+    }
+
+    public boolean isApiPlacement() {
+        return apiPlacement;
+    }
+
+    public PlacementOptions getApiOptions() {
+        return apiOptions;
+    }
+
+    private void applyApiTransformation() {
+        if (!apiPlacement || apiOptions == null) {
+            return;
+        }
+
+        AffineTransform transform = new AffineTransform();
+        if (apiOptions.isMirror()) {
+            transform = transform.scale(-1, 1, 1);
+        }
+        transform = transform.rotateY(rotationToDegrees(apiOptions.getRotation()));
+
+        try {
+            this.schematicClipboard = this.schematicClipboard.transform(transform);
+            this.schematicOffset = WorldEditUtils.getSchematicOffset(this.schematicClipboard);
+            this.verticalOffset = this.schematicClipboard.getMinimumPoint().y() - this.schematicClipboard.getOrigin().y();
+        } catch (WorldEditException exception) {
+            throw new IllegalStateException("Unable to transform schematic clipboard", exception);
+        }
+    }
+
+    private void analyzeApiClipboard() {
+        if (!apiPlacement) {
+            return;
+        }
+
+        apiChestLocations.clear();
+        apiVanillaSpawns.clear();
+        apiEliteMobsSpawns.clear();
+        apiMythicMobsSpawns.clear();
+
+        for (BlockVector3 blockPos : schematicClipboard.getRegion()) {
+            BaseBlock baseBlock = schematicClipboard.getFullBlock(blockPos);
+            Material material = BukkitAdapter.adapt(baseBlock.getBlockType());
+            if (material == null) {
+                continue;
+            }
+
+            Vector relative = new Vector(
+                    blockPos.x() - schematicClipboard.getMinimumPoint().x(),
+                    blockPos.y() - schematicClipboard.getMinimumPoint().y(),
+                    blockPos.z() - schematicClipboard.getMinimumPoint().z()
+            );
+
+            if (material == Material.CHEST
+                    || material == Material.TRAPPED_CHEST
+                    || material == Material.SHULKER_BOX) {
+                apiChestLocations.add(relative);
+            }
+
+            if (!isTrackedSign(material)) {
+                continue;
+            }
+
+            String line1 = WorldEditUtils.getLine(baseBlock, 1);
+            if (line1 == null || line1.isBlank()) {
+                continue;
+            }
+
+            if (line1.toLowerCase(Locale.ROOT).contains("[spawn]")) {
+                String line2 = WorldEditUtils.getLine(baseBlock, 2);
+                if (line2 == null || line2.isBlank()) {
+                    continue;
+                }
+                try {
+                    apiVanillaSpawns.put(relative, EntityType.valueOf(line2.toUpperCase(Locale.ROOT).replace("\"", "")));
+                } catch (IllegalArgumentException ignored) {
+                    if ("WITHER_CRYSTAL".equalsIgnoreCase(line2)) {
+                        apiVanillaSpawns.put(relative, EntityType.END_CRYSTAL);
+                    }
+                }
+                continue;
+            }
+
+            if (line1.toLowerCase(Locale.ROOT).contains("[elitemobs]")) {
+                StringBuilder filename = new StringBuilder();
+                for (int i = 2; i < 5; i++) {
+                    String line = WorldEditUtils.getLine(baseBlock, i);
+                    if (line != null) {
+                        filename.append(line);
+                    }
+                }
+                apiEliteMobsSpawns.put(relative, filename.toString());
+                continue;
+            }
+
+            if (line1.toLowerCase(Locale.ROOT).contains("[mythicmobs]")) {
+                String mob = WorldEditUtils.getLine(baseBlock, 2);
+                String level = WorldEditUtils.getLine(baseBlock, 3);
+                if (mob == null || mob.isBlank()) {
+                    continue;
+                }
+                apiMythicMobsSpawns.put(relative, mob + (level == null || level.isBlank() ? "" : ":" + level));
+            }
+        }
+    }
+
+    private static boolean isTrackedSign(Material material) {
+        String name = material.name();
+        return name.endsWith("_SIGN") || name.endsWith("_WALL_SIGN") || name.endsWith("_HANGING_SIGN");
+    }
+
+    private static int rotationToDegrees(BlockFace rotation) {
+        return switch (rotation) {
+            case EAST -> 270;
+            case SOUTH -> 180;
+            case WEST -> 90;
+            default -> 0;
+        };
     }
 
     public static void commandBasedCreation(Chunk chunk, GeneratorConfigFields.StructureType structureType, SchematicContainer container) {
@@ -116,7 +282,17 @@ public class FitAnything {
         Runnable pasteLogic = () -> {
             BuildPlaceEvent buildPlaceEvent = new BuildPlaceEvent(this);
             Bukkit.getServer().getPluginManager().callEvent(buildPlaceEvent);
-            if (buildPlaceEvent.isCancelled()) return;
+            if (buildPlaceEvent.isCancelled()) {
+                completeApiResult(PlacementResult.failure(
+                        getResolvedSchematicName(),
+                        location,
+                        getPlacementRotation(),
+                        isPlacementMirror(),
+                        "Placement cancelled by BuildPlaceEvent",
+                        getPlacementDurationMs()
+                ));
+                return;
+            }
 
             FitAnything fitAnything = this;
 
@@ -150,10 +326,21 @@ public class FitAnything {
                     }
                     onPasteComplete(fitAnything, location).run();
                 } else {
+                    String schematicName = fitAnything.schematicContainer != null
+                            ? fitAnything.schematicContainer.getConfigFilename()
+                            : "unknown";
                     DeveloperLogger.debug("PASTE_FAILED: " + location.getWorld().getName() + " "
                             + location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ()
-                            + " schematic=" + schematicContainer.getConfigFilename()
+                            + " schematic=" + schematicName
                             + " reason=" + pasteResult.reason());
+                    completeApiResult(PlacementResult.failure(
+                            getResolvedSchematicName(),
+                            location,
+                            getPlacementRotation(),
+                            isPlacementMirror(),
+                            formatPlacementFailure(pasteResult.reason()),
+                            getPlacementDurationMs()
+                    ));
                 }
             };
 
@@ -180,23 +367,37 @@ public class FitAnything {
         return new BukkitRunnable() {
             @Override
             public void run() {
-                if (DefaultConfig.isNewBuildingWarn()) {
+                String schematicName = fitAnything.getResolvedSchematicName();
+                PlacementOptions placementOptions = fitAnything.getEffectivePlacementOptions();
+                long placementTimeMs = fitAnything.getPlacementDurationMs();
+                
+                if (DefaultConfig.isNewBuildingWarn() && fitAnything.schematicContainer != null) {
                     String structureTypeString = fitAnything.structureType.toString().toLowerCase(Locale.ROOT).replace("_", " ");
                     for (Player player : Bukkit.getOnlinePlayers())
                         if (player.hasPermission("betterstructures.warn"))
                             player.spigot().sendMessage(
                                     SpigotMessage.commandHoverMessage("[BetterStructures] Công trình " + structureTypeString + " mới đã được tạo! Nhấp để dịch chuyển. Dùng lệnh \"/betterstructures silent\" để dừng cảnh báo!",
-                                            "Nhấp để dịch chuyển đến " + location.getWorld().getName() + ", " + location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ() + "\n Tên mẫu: " + schematicContainer.getConfigFilename(),
+                                            "Nhấp để dịch chuyển đến " + location.getWorld().getName() + ", " + location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ() + "\n Tên mẫu: " + schematicName,
                                             "/betterstructures teleport " + location.getWorld().getName() + " " + location.getBlockX() + " " + location.getBlockY() + " " + location.getBlockZ())
                             );
                 }
 
-                // Record structure location to file
-                StructureLocationManager.getInstance().recordStructure(
-                        location,
-                        schematicContainer.getConfigFilename(),
-                        fitAnything.structureType
-                );
+                StructureLocationData structureData = null;
+                if (fitAnything.shouldRecordInManager()) {
+                    structureData = StructureLocationManager.getInstance().recordStructure(
+                            location,
+                            schematicName,
+                            fitAnything.structureType
+                    );
+                    if (structureData != null) {
+                        StructurePlacedEvent placedEvent = new StructurePlacedEvent(
+                                structureData,
+                                placementOptions,
+                                placementTimeMs
+                        );
+                        Bukkit.getServer().getPluginManager().callEvent(placedEvent);
+                    }
+                }
 
                 if (!(fitAnything instanceof FitAirBuilding)) {
                     try {
@@ -213,24 +414,37 @@ public class FitAnything {
                         exception.printStackTrace();
                     }
                 }
-                try {
-                    fillChests();
-                } catch (Exception exception) {
-                    Logger.warn("Lỗi điền vào rương!");
-                    exception.printStackTrace();
+                if (fitAnything.shouldFillChests()) {
+                    try {
+                        fillChests();
+                    } catch (Exception exception) {
+                        Logger.warn("Lỗi điền vào rương!");
+                        exception.printStackTrace();
+                    }
                 }
-                try {
-                    spawnEntities();
-                } catch (Exception exception) {
-                    Logger.warn("Lỗi tạo thực thể!");
-                    exception.printStackTrace();
+                if (fitAnything.shouldSpawnEntities()) {
+                    try {
+                        spawnEntities();
+                    } catch (Exception exception) {
+                        Logger.warn("Lỗi tạo thực thể!");
+                        exception.printStackTrace();
+                    }
+                    try{
+                        spawnProps(fitAnything.schematicClipboard);
+                    } catch (Exception exception) {
+                        Logger.warn("Lỗi tạo đồ trang trí!");
+                        exception.printStackTrace();
+                    }
                 }
-                try{
-                    spawnProps(fitAnything.schematicClipboard);
-                } catch (Exception exception) {
-                    Logger.warn("Lỗi tạo đồ trang trí!");
-                    exception.printStackTrace();
-                }
+
+                fitAnything.completeApiResult(PlacementResult.success(
+                        schematicName,
+                        location,
+                        placementOptions.getRotation(),
+                        placementOptions.isMirror(),
+                        structureData,
+                        placementTimeMs
+                ));
             }
         };
     }
@@ -240,9 +454,78 @@ public class FitAnything {
         WorldEditUtils.pasteArmorStandsOnlyFromTransformed(clipboard, location.clone().add(schematicOffset));
     }
 
+    private PlacementOptions getEffectivePlacementOptions() {
+        if (apiOptions != null) {
+            return apiOptions;
+        }
+        return PlacementOptions.builder(BlockFace.NORTH)
+                .generatorId("betterstructures")
+                .build();
+    }
+
+    private String getResolvedSchematicName() {
+        if (schematicContainer == null) {
+            return "unknown";
+        }
+        String configName = schematicContainer.getConfigFilename();
+        return configName.endsWith(".yml") ? configName.substring(0, configName.length() - 4) : configName;
+    }
+
+    private long getPlacementDurationMs() {
+        if (!apiPlacement || apiPlacementStartTime <= 0L) {
+            return 0L;
+        }
+        return Math.max(0L, System.currentTimeMillis() - apiPlacementStartTime);
+    }
+
+    private BlockFace getPlacementRotation() {
+        return getEffectivePlacementOptions().getRotation();
+    }
+
+    private boolean isPlacementMirror() {
+        return getEffectivePlacementOptions().isMirror();
+    }
+
+    private boolean shouldFillChests() {
+        return getEffectivePlacementOptions().isFillChests();
+    }
+
+    private boolean shouldSpawnEntities() {
+        return getEffectivePlacementOptions().isSpawnEntities();
+    }
+
+    private boolean shouldRecordInManager() {
+        return getEffectivePlacementOptions().isRecordInManager();
+    }
+
+    private void completeApiResult(PlacementResult result) {
+        if (!apiPlacement || apiCallback == null) {
+            return;
+        }
+        Consumer<PlacementResult> callback = apiCallback;
+        apiCallback = null;
+        callback.accept(result);
+    }
+
+    private static String formatPlacementFailure(String reason) {
+        if (reason == null || reason.isBlank()) {
+            return "FAWE paste failed: unknown";
+        }
+        if (reason.startsWith("chunk_validation_failed:")) {
+            return "Chunk validation failed: " + reason.substring("chunk_validation_failed:".length());
+        }
+        if (reason.startsWith("fawe_exception:")) {
+            return "FAWE paste failed: " + reason.substring("fawe_exception:".length());
+        }
+        return "FAWE paste failed: " + reason;
+    }
+
     private void assignPedestalMaterial(Location location) {
         if (this instanceof FitAirBuilding) return;
-        pedestalMaterial = schematicContainer.getSchematicConfigField().getPedestalMaterial();
+        // Handle API mode where schematicContainer may be null
+        if (schematicContainer != null) {
+            pedestalMaterial = schematicContainer.getSchematicConfigField().getPedestalMaterial();
+        }
         Location lowestCorner = location.clone().add(schematicOffset);
 
         int maxSurfaceHeightScan = 20;
@@ -355,8 +638,11 @@ public class FitAnything {
     }
 
     private void fillChests() {
+        if (schematicContainer == null) return;
+
+        List<Vector> chestLocations = apiPlacement ? apiChestLocations : schematicContainer.getChestLocations();
         if (schematicContainer.getGeneratorConfigFields().getChestContents() != null)
-            for (Vector chestPosition : schematicContainer.getChestLocations()) {
+            for (Vector chestPosition : chestLocations) {
                 Location chestLocation = LocationProjector.project(location, schematicOffset, chestPosition);
                 if (!(chestLocation.getBlock().getState() instanceof Container container)) {
                     Logger.warn("Dự kiến " + chestLocation.getBlock().getType() + " là thùng chứa nhưng không lấy được. Bỏ qua chiến lợi phẩm này!");
@@ -382,11 +668,16 @@ public class FitAnything {
     }
 
     private void spawnEntities() {
+        if (schematicContainer == null) return;
+        
         List<UUID> spawnedMobUUIDs = new ArrayList<>();
         List<MobSpawnConfig> mobSpawnConfigs = new ArrayList<>();
+        Map<Vector, EntityType> vanillaSpawns = apiPlacement ? apiVanillaSpawns : schematicContainer.getVanillaSpawns();
+        Map<Vector, String> eliteSpawns = apiPlacement ? apiEliteMobsSpawns : schematicContainer.getEliteMobsSpawns();
+        Map<Vector, String> mythicSpawns = apiPlacement ? apiMythicMobsSpawns : schematicContainer.getMythicMobsSpawns();
 
         // Spawn vanilla mobs
-        for (Vector entityPosition : schematicContainer.getVanillaSpawns().keySet()) {
+        for (Vector entityPosition : vanillaSpawns.keySet()) {
             Location signLocation = LocationProjector.project(location, schematicOffset, entityPosition).clone();
             // Skip if chunk not loaded to avoid sync chunk loading with FAWE
             if (!signLocation.getWorld().isChunkLoaded(signLocation.getBlockX() >> 4, signLocation.getBlockZ() >> 4)) {
@@ -396,7 +687,7 @@ public class FitAnything {
             signLocation.getBlock().setBlockData(Material.AIR.createBlockData(), false);
             //If mobs spawn in corners they might choke on adjacent walls
             signLocation.add(new Vector(0.5, 0, 0.5));
-            EntityType entityType = schematicContainer.getVanillaSpawns().get(entityPosition);
+            EntityType entityType = vanillaSpawns.get(entityPosition);
 
             // MythicMobs override: try to replace vanilla mob with MM equivalent
             Entity entity = null;
@@ -448,7 +739,7 @@ public class FitAnything {
         }
 
         // Spawn EliteMobs bosses
-        for (Vector elitePosition : schematicContainer.getEliteMobsSpawns().keySet()) {
+        for (Vector elitePosition : eliteSpawns.keySet()) {
             Location eliteLocation = LocationProjector.project(location, schematicOffset, elitePosition).clone();
             // Skip if chunk not loaded to avoid sync chunk loading with FAWE
             if (!eliteLocation.getWorld().isChunkLoaded(eliteLocation.getBlockX() >> 4, eliteLocation.getBlockZ() >> 4)) {
@@ -456,7 +747,7 @@ public class FitAnything {
             }
             eliteLocation.getBlock().setBlockData(Material.AIR.createBlockData(), false);
             eliteLocation.add(new Vector(0.5, 0, 0.5));
-            String bossFilename = schematicContainer.getEliteMobsSpawns().get(elitePosition);
+            String bossFilename = eliteSpawns.get(elitePosition);
 
             Entity eliteMob = null;
             MobSpawnConfig.MobType trackingType = MobSpawnConfig.MobType.ELITEMOBS;
@@ -515,7 +806,7 @@ public class FitAnything {
         }
 
         // Spawn MythicMobs
-        for (Map.Entry<Vector, String> entry : schematicContainer.getMythicMobsSpawns().entrySet()) {
+        for (Map.Entry<Vector, String> entry : mythicSpawns.entrySet()) {
             Location mobLocation = LocationProjector.project(location, schematicOffset, entry.getKey()).clone();
             // Skip if chunk not loaded to avoid sync chunk loading with FAWE
             if (!mobLocation.getWorld().isChunkLoaded(mobLocation.getBlockX() >> 4, mobLocation.getBlockZ() >> 4)) {

@@ -63,8 +63,8 @@ public class StructureLocationManager {
      * @param schematicName The name of the schematic/config file
      * @param structureType The type of structure
      */
-    public void recordStructure(Location location, String schematicName, StructureType structureType) {
-        recordStructure(location, schematicName, structureType, 16, 16, 16);
+    public StructureLocationData recordStructure(Location location, String schematicName, StructureType structureType) {
+        return recordStructure(location, schematicName, structureType, 16, 16, 16);
     }
 
     /**
@@ -77,11 +77,11 @@ public class StructureLocationManager {
      * @param radiusY       Structure radius in Y direction
      * @param radiusZ       Structure radius in Z direction
      */
-    public void recordStructure(Location location, String schematicName, StructureType structureType,
+    public StructureLocationData recordStructure(Location location, String schematicName, StructureType structureType,
                                  int radiusX, int radiusY, int radiusZ) {
         if (location == null || location.getWorld() == null) {
             Logger.warn("Đã thử ghi cấu trúc với vị trí hoặc thế giới rỗng (null)");
-            return;
+            return null;
         }
 
         String worldName = location.getWorld().getName();
@@ -98,19 +98,21 @@ public class StructureLocationManager {
 
         // Mark world as dirty
         dirtyWorlds.add(worldName);
+        return data;
     }
 
     /**
      * Records a structure with full data (used when updating existing structures).
      */
-    public void recordStructure(StructureLocationData data) {
-        if (data == null) return;
+    public StructureLocationData recordStructure(StructureLocationData data) {
+        if (data == null) return null;
 
         String worldName = data.getWorldName();
         String key = data.getKey();
 
         locationCache.computeIfAbsent(worldName, k -> new ConcurrentHashMap<>()).put(key, data);
         dirtyWorlds.add(worldName);
+        return data;
     }
 
     /**
@@ -335,6 +337,56 @@ public class StructureLocationManager {
     }
 
     /**
+     * Gets all structures within range of a location.
+     */
+    public List<StructureLocationData> getNearbyStructures(Location center, double radius) {
+        if (center == null || center.getWorld() == null || radius < 0) {
+            return Collections.emptyList();
+        }
+
+        Collection<StructureLocationData> structures = getStructuresInWorld(center.getWorld().getName());
+        if (structures.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<StructureLocationData> results = new ArrayList<>();
+        for (StructureLocationData data : structures) {
+            if (data.isWithinRange(center, radius)) {
+                results.add(data);
+            }
+        }
+        return results;
+    }
+
+    /**
+     * Gets all structures in a world that match a schematic name pattern.
+     */
+    public List<StructureLocationData> getStructuresByName(String worldName, String schematicPattern) {
+        if (worldName == null || worldName.isBlank() || schematicPattern == null || schematicPattern.isBlank()) {
+            return Collections.emptyList();
+        }
+
+        Collection<StructureLocationData> structures = getStructuresInWorld(worldName);
+        if (structures.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        String normalizedPattern = normalizeSchematicToken(schematicPattern);
+        boolean wildcard = normalizedPattern.contains("*");
+        List<StructureLocationData> results = new ArrayList<>();
+        for (StructureLocationData data : structures) {
+            String normalizedName = normalizeSchematicToken(data.schematicName());
+            boolean matches = wildcard
+                    ? normalizedName.matches(normalizedPattern.replace(".", "\\.").replace("*", ".*"))
+                    : normalizedName.contains(normalizedPattern);
+            if (matches) {
+                results.add(data);
+            }
+        }
+        return results;
+    }
+
+    /**
      * Checks if a structure exists at the given location.
      *
      * @param worldName The name of the world
@@ -373,5 +425,16 @@ public class StructureLocationManager {
         saveAllDirtyWorlds();
         locationCache.clear();
         loadAllWorldData();
+    }
+
+    private static String normalizeSchematicToken(String schematicName) {
+        String normalized = schematicName.toLowerCase(Locale.ROOT).trim();
+        if (normalized.endsWith(".schem")) {
+            normalized = normalized.substring(0, normalized.length() - 6);
+        }
+        if (normalized.endsWith(".yml")) {
+            normalized = normalized.substring(0, normalized.length() - 4);
+        }
+        return normalized;
     }
 }
